@@ -15,10 +15,10 @@ const Home: NextPage = () => {
       title={'TesloShop - Home'}
       pageDescription={'Encuentra los mejores productos aquí'}
     >
-      <Typography variant="h1" component="h1">
+      <Typography variant='h1' component='h1'>
         Tienda
       </Typography>
-      <Typography variant="h2" sx={{ mb: 1 }}>
+      <Typography variant='h2' sx={{ mb: 1 }}>
         Todos los productos
       </Typography>
       <Grid container spacing={4}>
@@ -27,7 +27,7 @@ const Home: NextPage = () => {
             <Card>
               <CardActionArea>
                 <CardMedia
-                  component="img"
+                  component='img'
                   image={`products/${product.images[0]}`}
                   alt={product.title}
                 />
