@@ -29,10 +29,14 @@
 .circular-btn {
   border-radius: 30px;
 }
+.circular-btn-icon {
+  border-radius: 10px;
+}
 
-.circular-btn:hover {
+.circular-btn:hover,.circular-btn-icon:hover {
   background-color: #274494;
 }
+
 
 .summary-card {
   border: 1px solid rgba(0, 0, 0, 0.1);
