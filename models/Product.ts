@@ -34,7 +34,7 @@ const productSchema = new Schema({
     timestamps: true
 })
 
-/* Crear índice de Mongo*/
+productSchema.index({ title: 'text', tags: 'text' });
 
 const Product: Model<Iproduct> = mongoose.models.Product || model('Product', productSchema);
 
