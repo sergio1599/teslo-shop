@@ -1,3 +1,6 @@
+import { useRouter } from 'next/router';
+import { useContext } from 'react';
+import { UiContext } from '../../context';
 import {
   Box,
   Divider,
@@ -25,11 +28,23 @@ import {
 } from '@mui/icons-material';
 
 export const SideMenu = () => {
+  const { isMenuOpen, toogleSideMenu } = useContext(UiContext);
+  const router = useRouter();
+
+  const navigateTo = (url: string) => {
+    toogleSideMenu();
+    router.push(url);
+  };
+
   return (
     <Drawer
-      open={false}
+      open={isMenuOpen}
       anchor='right'
-      sx={{ backdropFilter: 'blur(4px)', transition: 'all 0.5s ease-out' }}
+      sx={{
+        backdropFilter: 'blur(4px)',
+        transition: 'all 0.5s ease-out',
+      }}
+      onClose={toogleSideMenu}
     >
       <Box sx={{ width: 250, paddingTop: 5 }}>
         <List>
@@ -61,21 +76,33 @@ export const SideMenu = () => {
             <ListItemText primary={'Mis Ordenes'} />
           </ListItem>
 
-          <ListItem button sx={{ display: { xs: '', sm: 'none' } }}>
+          <ListItem
+            onClick={() => navigateTo('/category/men')}
+            button
+            sx={{ display: { xs: '', sm: 'none' } }}
+          >
             <ListItemIcon>
               <MaleOutlined />
             </ListItemIcon>
             <ListItemText primary={'Hombres'} />
           </ListItem>
 
-          <ListItem button sx={{ display: { xs: '', sm: 'none' } }}>
+          <ListItem
+            onClick={() => navigateTo('/category/women')}
+            button
+            sx={{ display: { xs: '', sm: 'none' } }}
+          >
             <ListItemIcon>
               <FemaleOutlined />
             </ListItemIcon>
             <ListItemText primary={'Mujeres'} />
           </ListItem>
 
-          <ListItem button sx={{ display: { xs: '', sm: 'none' } }}>
+          <ListItem
+            onClick={() => navigateTo('/category/kid')}
+            button
+            sx={{ display: { xs: '', sm: 'none' } }}
+          >
             <ListItemIcon>
               <EscalatorWarningOutlined />
             </ListItemIcon>
