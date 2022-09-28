@@ -4,19 +4,16 @@ import { ShopLayout } from '../../components/layouts';
 import { ProductSlideShow, SizeSelector } from '../../components/products';
 import { ItemCounter } from '../../components/ui';
 import { Iproduct } from '../../interfaces';
-import { NextPage, GetServerSideProps } from 'next';
+import { NextPage, GetStaticProps, GetStaticPaths } from 'next';
 import { databaseProducts } from '../../database';
-
 interface Props {
   product: Iproduct;
 }
 
-const ProductPage: FC<Props> = ({ product }) => {
+const ProductPage: NextPage<Props> = ({ product }) => {
   /* const { products: product, isLoading } = useProducts(
     `/products/${router.query.slug}`
   ); */
-
-  console.log(product.sizes);
 
   return (
     <ShopLayout title={product.title} pageDescription={product.title}>
@@ -60,11 +57,50 @@ const ProductPage: FC<Props> = ({ product }) => {
   );
 };
 
-/* GetServerSideProps */
-// You should use getServerSideProps when:
-// - Only if you need to pre-render a page whose data must be fetched at request time
+/* Hacer getStaticPaths blocking
+y getStaticProps y revalidar cada 24 horas */
 
-export const getServerSideProps: GetServerSideProps = async ({ params }) => {
+// You should use getStaticPaths if you’re statically pre-rendering pages that use dynamic routes
+
+export const getStaticPaths: GetStaticPaths = async (ctx) => {
+  const productSlug = await databaseProducts.getAllProductSlugs();
+
+  return {
+    paths: productSlug.map(({ slug }) => ({
+      params: { slug },
+    })),
+    fallback: 'blocking',
+  };
+};
+
+// You should use getStaticProps when:
+//- The data required to render the page is available at build time ahead of a user’s request.
+//- The data comes from a headless CMS.
+//- The data can be publicly cached (not user-specific).
+//- The page must be pre-rendered (for SEO) and be very fast — getStaticProps generates HTML and JSON files, both of which can be cached by a CDN for performance.
+
+export const getStaticProps: GetStaticProps = async ({ params }) => {
+  const { slug = '' } = params as { slug: string }; // your fetch function here
+
+  const product = await databaseProducts.getProductBySlug(slug);
+
+  if (!product) {
+    return {
+      redirect: {
+        destination: '/',
+        permanent: false,
+      },
+    };
+  }
+  return {
+    props: {
+      product,
+    },
+    revalidate: 86400,
+  };
+};
+
+/* export const getServerSideProps: GetServerSideProps = async ({ params }) => {
   const { slug = '' } = params as { slug: string };
   const product = await databaseProducts.getProductBySlug(slug); // your fetch function here
 
@@ -83,5 +119,5 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
     },
   };
 };
-
+ */
 export default ProductPage;
