@@ -1,4 +1,5 @@
 export * as database from './db'
+export * as databaseProducts from './dbProducts'
 
 
 /* Base de datos de prueba */

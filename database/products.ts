@@ -18,6 +18,9 @@ interface SeedData {
     products: SeedProduct[],
 }
 
+
+
+
 export const initialData: SeedData = {
     products: [
         {

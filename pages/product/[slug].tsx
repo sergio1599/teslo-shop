@@ -1,12 +1,23 @@
-import React from 'react';
+import React, { FC } from 'react';
 import { Box, Button, Chip, Grid, Typography } from '@mui/material';
 import { ShopLayout } from '../../components/layouts';
-import { initialData } from '../../database/products';
 import { ProductSlideShow, SizeSelector } from '../../components/products';
 import { ItemCounter } from '../../components/ui';
-const product = initialData.products[0];
+import { Iproduct } from '../../interfaces';
+import { NextPage, GetServerSideProps } from 'next';
+import { databaseProducts } from '../../database';
 
-const ProductPage = () => {
+interface Props {
+  product: Iproduct;
+}
+
+const ProductPage: FC<Props> = ({ product }) => {
+  /* const { products: product, isLoading } = useProducts(
+    `/products/${router.query.slug}`
+  ); */
+
+  console.log(product.sizes);
+
   return (
     <ShopLayout title={product.title} pageDescription={product.title}>
       <Grid container spacing={3}>
@@ -23,7 +34,7 @@ const ProductPage = () => {
               ${product.price}
             </Typography>
             <SizeSelector
-              selectedSize={ product.sizes[2] }
+              //selectedSize={product.sizes[2]}
               sizes={product.sizes}
             />
             <Box sx={{ my: 2 }}>
@@ -47,6 +58,30 @@ const ProductPage = () => {
       </Grid>
     </ShopLayout>
   );
+};
+
+/* GetServerSideProps */
+// You should use getServerSideProps when:
+// - Only if you need to pre-render a page whose data must be fetched at request time
+
+export const getServerSideProps: GetServerSideProps = async ({ params }) => {
+  const { slug = '' } = params as { slug: string };
+  const product = await databaseProducts.getProductBySlug(slug); // your fetch function here
+
+  if (!product) {
+    return {
+      redirect: {
+        destination: '/',
+        permanent: false,
+      },
+    };
+  }
+
+  return {
+    props: {
+      product,
+    },
+  };
 };
 
 export default ProductPage;
