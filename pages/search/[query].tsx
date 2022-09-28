@@ -1,15 +1,17 @@
 import type { NextPage, GetServerSideProps } from 'next';
 import { ShopLayout } from '../../components/layouts';
-import { Typography } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 import { ProductList } from '../../components/products';
 import { databaseProducts } from '../../database';
 import { Iproduct } from '../../interfaces';
 
 interface Props {
   products: Iproduct[];
+  foundProducts: boolean;
+  query: string;
 }
 
-const SearchPage: NextPage<Props> = ({ products }) => {
+const SearchPage: NextPage<Props> = ({ products, foundProducts, query }) => {
   return (
     <ShopLayout
       title={'TesloShop - Buscar'}
@@ -18,9 +20,26 @@ const SearchPage: NextPage<Props> = ({ products }) => {
       <Typography variant='h1' component='h1'>
         Buscar producto
       </Typography>
-      <Typography variant='h2' sx={{ mb: 1 }}>
-        ABC---123
-      </Typography>
+      {foundProducts ? (
+        <Typography textTransform='capitalize' variant='h2' sx={{ mb: 1 }}>
+          Termino: {query}
+        </Typography>
+      ) : (
+        <Box display='flex'>
+          <Typography variant='h2' sx={{ mb: 1 }}>
+            No encontramos ningún producto
+          </Typography>
+          <Typography
+            variant='h2'
+            sx={{ ml: 1 }}
+            color='secondary'
+            textTransform='capitalize'
+          >
+            {query}
+          </Typography>
+        </Box>
+      )}
+
       <ProductList products={products} />
     </ShopLayout>
   );
@@ -42,11 +61,18 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
   }
 
   let products = await databaseProducts.getProductsByTerm(query);
+  const foundProducts = products.length > 0;
   /* TODO: Retornar otros productos */
+  if (!foundProducts) {
+    /* products = await databaseProducts.getAllProducts(); */
+    products = await databaseProducts.getProductsByTerm('cybertruck');
+  }
 
   return {
     props: {
       products,
+      foundProducts,
+      query,
     },
   };
 };
