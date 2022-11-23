@@ -1,5 +1,6 @@
-import { FC } from 'react';
+import { FC, useContext } from 'react';
 import NextLink from 'next/link';
+import { CartContext } from '../../context';
 import {
   Box,
   Button,
@@ -12,20 +13,16 @@ import {
 import { initialData } from '../../database/products';
 import { ItemCounter } from '../ui';
 
-const productsInCart = [
-  initialData.products[0],
-  initialData.products[1],
-  initialData.products[2],
-];
-
 interface Props {
   editable: boolean;
 }
 
 export const CartList: FC<Props> = ({ editable }) => {
+  const { cart } = useContext(CartContext);
+
   return (
     <>
-      {productsInCart.map(product => (
+      {cart.map((product) => (
         <Grid container spacing={2} key={product.slug} sx={{ mb: 1 }}>
           <Grid item xs={3}>
             {/* Todo: llevar a la página del producto */}
@@ -33,7 +30,7 @@ export const CartList: FC<Props> = ({ editable }) => {
               <Link>
                 <CardActionArea>
                   <CardMedia
-                    image={`/products/${product.images[0]}`}
+                    image={`/products/${product.images}`}
                     component='img'
                     sx={{ borderRadius: '5px' }}
                   />
@@ -48,9 +45,16 @@ export const CartList: FC<Props> = ({ editable }) => {
                 Talla: <strong>M</strong>
               </Typography>
               {editable ? (
-                <ItemCounter />
+                <ItemCounter
+                  currentValue={product.quantity}
+                  maxValue={5}
+                  updateQuantity={() => {}}
+                />
               ) : (
-                <Typography variant='h2'>3 items</Typography>
+                <Typography variant='h2'>
+                  {product.quantity}{' '}
+                  {product.quantity > 1 ? 'productos' : 'producto'}
+                </Typography>
               )}
             </Box>
           </Grid>

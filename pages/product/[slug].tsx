@@ -53,12 +53,9 @@ const ProductPage: NextPage<Props> = ({ product }) => {
   const onAddProduct = () => {
     if (!tempCartProduct.size) return;
 
-    /* Llamar acción de context para agregar al carrito */
-
     addProductToCart(tempCartProduct);
-
-    console.log({ tempCartProduct });
-    //router.push('/cart');
+    /* console.log({ tempCartProduct }); */
+    router.push('/cart');
   };
 
   return (
