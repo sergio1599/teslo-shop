@@ -39,13 +39,6 @@ export const CartProvider: FC<PropsWithChildren> = ({ children }) => {
   }, [state.cart]);
 
   const addProductToCart = (product: ICartProduct) => {
-    /* const productInCart = state.cart.some((item) => item._id === product._id);
-    if (!productInCart)
-      return dispatch({
-        type: '[Cart] - Update products in cart',
-        payload: [...state.cart, product],
-      }); */
-
     const productInCartButDifferentSize = state.cart.some(
       (item) => item._id === product._id && item.size === product.size
     );
@@ -69,8 +62,17 @@ export const CartProvider: FC<PropsWithChildren> = ({ children }) => {
     });
   };
 
+  const updateCartQuantity = (product: ICartProduct) => {
+    dispatch({
+      type: '[Cart] - Update cart quantity',
+      payload: product,
+    });
+  };
+
   return (
-    <CartContext.Provider value={{ ...state, addProductToCart }}>
+    <CartContext.Provider
+      value={{ ...state, addProductToCart, updateCartQuantity }}
+    >
       {children}
     </CartContext.Provider>
   );
