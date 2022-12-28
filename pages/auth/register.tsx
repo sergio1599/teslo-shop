@@ -12,7 +12,6 @@ import {
 } from '@mui/material';
 import { AuthLayout } from '../../components/layouts';
 import { validations } from '../../utils';
-import tesloApi from '../../api/tesloApi';
 import { ErrorOutline } from '@mui/icons-material';
 import { AuthContext } from '../../context';
 import { useRouter } from 'next/router';
@@ -46,7 +45,8 @@ const RegisterPage = () => {
     }
 
     /* Navegar */
-    router.replace('/');
+    const destination = router.query.p?.toString() || '/';
+    router.replace(destination);
   };
 
   return (
@@ -119,7 +119,14 @@ const RegisterPage = () => {
               </Button>
             </Grid>
             <Grid item xs={12} display='flex' justifyContent='flex-end'>
-              <NextLink href='/auth/login' passHref>
+              <NextLink
+                href={
+                  router.query.p
+                    ? `/auth/login?p=${router.query.p}`
+                    : '/auth/login'
+                }
+                passHref
+              >
                 <Link underline='always'>¿Ya tienes una cuenta?</Link>
               </NextLink>
             </Grid>
