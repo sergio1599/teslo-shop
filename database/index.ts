@@ -1,5 +1,7 @@
 export * as database from './db'
 export * as databaseProducts from './dbProducts'
+export * as databaseUsers from './dbUsers'
+export * from './constants'
 
 
 /* Base de datos de prueba */
