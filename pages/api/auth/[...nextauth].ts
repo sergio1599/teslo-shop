@@ -41,7 +41,7 @@ export const authOptions: NextAuthOptions = {
                 switch (account.type) {
 
                     case 'oauth':
-                        /* Verificar si existe en la db */
+                        token.user = await databaseUsers.oAuthToDbUser(user?.email || '', user?.name || '');
                         break
 
                     case 'credentials':
