@@ -3,8 +3,6 @@ import {
   FormControl,
   Grid,
   MenuItem,
-  Select,
-  SelectChangeEvent,
   TextField,
   Typography,
 } from '@mui/material';
@@ -52,7 +50,6 @@ const AddressPage = () => {
   }; */
 
   const onSubmitAddress = async (data: IShippingAddress) => {
-
     updateAddress(data);
     router.push('/checkout/summary');
   };
@@ -147,7 +144,7 @@ const AddressPage = () => {
                 select
                 variant='filled'
                 label='País'
-                defaultValue={countries[0].code}
+                defaultValue={Cookies.get('country') || countries[0].code}
                 {...register('country', {
                   required: 'Este campo es requerido',
                   minLength: { value: 3, message: 'Mínimo 3 caracteres' },

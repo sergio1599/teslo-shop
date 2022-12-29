@@ -1,3 +1,4 @@
+import { useContext } from 'react';
 import NextLink from 'next/link';
 import {
   Box,
@@ -13,9 +14,20 @@ import {
 
 import { CartList, OrderSumary } from '../../components/cart';
 import { ShopLayout } from '../../components/layouts';
-import { EditOutlined } from '@mui/icons-material';
+
+import { CartContext } from '../../context';
+import { countries } from '../../utils';
 
 const SummaryPage = () => {
+  const { shippingAddress, numberOfItems } = useContext(CartContext);
+
+  if (!shippingAddress) {
+    return <></>;
+  }
+
+  const { firstName, lastName, address, address2, city, country, phone, zip } =
+    shippingAddress;
+
   return (
     <ShopLayout
       title={'Resumen de orden'}
@@ -32,7 +44,10 @@ const SummaryPage = () => {
         <Grid item xs={12} sm={5}>
           <Card className='summary-card'>
             <CardContent>
-              <Typography variant='h2'>Resumen (3 productos)</Typography>
+              <Typography variant='h2'>
+                Resumen ({numberOfItems}{' '}
+                {numberOfItems === 1 ? 'producto' : 'productos'})
+              </Typography>
               <Divider sx={{ my: 1 }} />
               <Box display='flex' justifyContent='space-between'>
                 <Typography variant='subtitle1'>
@@ -43,11 +58,18 @@ const SummaryPage = () => {
                 </NextLink>
               </Box>
 
-              <Typography>Sergio Quintana</Typography>
-              <Typography>323 Algún lugar</Typography>
-              <Typography>Duitama, Boyacá</Typography>
-              <Typography>Colombia</Typography>
-              <Typography>+57 3122812819</Typography>
+              <Typography>
+                {firstName} {lastName}
+              </Typography>
+              <Typography>
+                {address}
+                {address2 ? `, ${address2}` : ''}
+              </Typography>
+              <Typography>{city}</Typography>
+              <Typography>
+                {countries.find((c) => c.code === country)?.name}
+              </Typography>
+              <Typography>{phone}</Typography>
               <Divider sx={{ my: 1 }} />
               <Box display='flex' justifyContent='space-between'>
                 <Typography variant='subtitle1'>Productos</Typography>
