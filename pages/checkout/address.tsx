@@ -18,7 +18,6 @@ import { IShippingAddress } from '../../interfaces';
 import { CartContext } from '../../context';
 
 const AddressPage = () => {
-  const [country, setCountry] = useState('');
   const { updateAddress } = useContext(CartContext);
 
   const router = useRouter();
@@ -41,13 +40,23 @@ const AddressPage = () => {
     register,
     handleSubmit,
     formState: { errors },
+    reset,
   } = useForm<IShippingAddress>({
-    defaultValues: getAddressFromCookies(),
+    defaultValues: {
+      firstName: '',
+      lastName: '',
+      address: '',
+      address2: '',
+      zip: '',
+      city: '',
+      country: countries[0].code,
+      phone: '',
+    },
   });
 
-  /*   const handleChange = (event: SelectChangeEvent) => {
-    setCountry(event.target.value as string);
-  }; */
+  useEffect(() => {
+    reset(getAddressFromCookies());
+  }, [reset]);
 
   const onSubmitAddress = async (data: IShippingAddress) => {
     updateAddress(data);
@@ -139,25 +148,28 @@ const AddressPage = () => {
             />
           </Grid>
           <Grid item xs={12} sm={6}>
-            <FormControl fullWidth>
-              <TextField
-                select
-                variant='filled'
-                label='País'
-                defaultValue={Cookies.get('country') || countries[0].code}
-                {...register('country', {
-                  required: 'Este campo es requerido',
-                  minLength: { value: 3, message: 'Mínimo 3 caracteres' },
-                })}
-                error={!!errors.country}
-              >
-                {countries.map((country) => (
-                  <MenuItem key={country.code} value={country.code}>
-                    {country.name}
-                  </MenuItem>
-                ))}
-              </TextField>
-            </FormControl>
+            {/* <FormControl fullWidth> */}
+            <TextField
+              //select
+              type='text'
+              variant='filled'
+              label='País'
+              fullWidth
+              //defaultValue={Cookies.get('country') || countries[0].code}
+              {...register('country', {
+                required: 'Este campo es requerido',
+                minLength: { value: 3, message: 'Mínimo 3 caracteres' },
+              })}
+              error={!!errors.country}
+              helperText={errors.country?.message}
+            >
+              {/* {countries.map((country) => (
+                <MenuItem key={country.code} value={country.code}>
+                  {country.name}
+                </MenuItem>
+              ))} */}
+            </TextField>
+            {/* </FormControl> */}
           </Grid>
           <Grid item xs={12} sm={6}>
             <TextField
