@@ -10,10 +10,14 @@ interface ContextProps {
   total: number;
   shippingAddress?: IShippingAddress;
 
+  //methods
   addProductToCart: (product: ICartProduct) => void;
   updateCartQuantity: (product: ICartProduct) => void;
   removeCartProduct: (product: ICartProduct) => void;
   updateAddress: (address: IShippingAddress) => void;
+
+  //orders
+  createOrder: () => Promise<void>;
 }
 
 export const CartContext = createContext({} as ContextProps);
