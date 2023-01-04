@@ -26,8 +26,6 @@ interface Props {
 }
 
 const OrderPage: NextPage<Props> = ({ order }) => {
-  console.log({ order });
-
   const { shippingAddress } = order;
 
   return (
@@ -57,7 +55,7 @@ const OrderPage: NextPage<Props> = ({ order }) => {
         />
       )}
 
-      <Grid container>
+      <Grid container className='fadeIn'>
         <Grid item xs={12} sm={7}>
           <CartList editable={false} products={order.orderItems} />
         </Grid>
