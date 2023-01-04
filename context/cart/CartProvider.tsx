@@ -68,6 +68,7 @@ export const CartProvider: FC<PropsWithChildren> = ({ children }) => {
     }
   }, []);
 
+  //solucionar error acá
   useEffect(() => {
     if (state.cart.length > 0) Cookie.set('cart', JSON.stringify(state.cart));
   }, [state.cart]);

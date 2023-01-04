@@ -43,7 +43,7 @@ const SummaryPage = () => {
       setErrorMessage(message);
       return;
     }
-    
+
     router.replace(`/orders/${message}`);
   };
 
@@ -97,7 +97,7 @@ const SummaryPage = () => {
               <Divider sx={{ my: 1 }} />
               <Box display='flex' justifyContent='space-between'>
                 <Typography variant='subtitle1'>Productos</Typography>
-                <NextLink href='/checkout/address' passHref>
+                <NextLink href='/cart' passHref>
                   <Link underline='always'>Editar</Link>
                 </NextLink>
               </Box>

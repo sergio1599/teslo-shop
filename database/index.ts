@@ -1,5 +1,6 @@
 export * as database from './db'
 export * as databaseProducts from './dbProducts'
+export * as databaseOrders from './dbOrders'
 export * as databaseUsers from './dbUsers'
 export * from './constants'
 
