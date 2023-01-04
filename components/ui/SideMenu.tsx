@@ -10,6 +10,7 @@ import {
   InputAdornment,
   List,
   ListItem,
+  ListItemButton,
   ListItemIcon,
   ListItemText,
   ListSubheader,
@@ -83,8 +84,7 @@ export const SideMenu = () => {
                 </ListItemIcon>
                 <ListItemText primary={'Perfil'} />
               </ListItem>
-
-              <ListItem button>
+              <ListItem onClick={() => navigateTo('/orders/history')} button>
                 <ListItemIcon>
                   <ConfirmationNumberOutlined />
                 </ListItemIcon>
