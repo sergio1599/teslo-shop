@@ -1,10 +1,10 @@
 import { FC, PropsWithChildren, useEffect, useReducer } from 'react';
 import Cookie from 'js-cookie';
-import { ICartProduct, IShippingAddress } from '../../interfaces';
+import axios from 'axios';
+
+import { ICartProduct, IOrder, IShippingAddress } from '../../interfaces';
 import { CartContext, cartReducer } from './';
 import { tesloApi } from '../../api';
-import { IOrder } from '../../interfaces/order';
-import axios from 'axios';
 
 export interface CartState {
   isLoaded: boolean;
@@ -13,6 +13,7 @@ export interface CartState {
   subTotal: number;
   tax: number;
   total: number;
+
   shippingAddress?: IShippingAddress;
 }
 
@@ -29,17 +30,15 @@ const CART_INITIAL_STATE: CartState = {
 export const CartProvider: FC<PropsWithChildren> = ({ children }) => {
   const [state, dispatch] = useReducer(cartReducer, CART_INITIAL_STATE);
 
-  /* Effect */
-
+  // Efecto
   useEffect(() => {
     try {
-      const cartCookieData = Cookie.get('cart')
+      const cookieProducts = Cookie.get('cart')
         ? JSON.parse(Cookie.get('cart')!)
         : [];
-
       dispatch({
         type: '[Cart] - LoadCart from cookies | storage',
-        payload: cartCookieData,
+        payload: cookieProducts,
       });
     } catch (error) {
       dispatch({
@@ -61,22 +60,18 @@ export const CartProvider: FC<PropsWithChildren> = ({ children }) => {
         country: Cookie.get('country') || '',
         phone: Cookie.get('phone') || '',
       };
+
       dispatch({
-        type: '[Cart] - Load Address From Cookies',
+        type: '[Cart] - LoadAddress from Cookies',
         payload: shippingAddress,
       });
     }
   }, []);
 
-  //solucionar error acá
   useEffect(() => {
-    if (state.cart.length > 0) Cookie.set('cart', JSON.stringify(state.cart));
-  }, [state.cart]);
-
-  /* useEffect(() => {
     Cookie.set('cart', JSON.stringify(state.cart));
   }, [state.cart]);
- */
+
   useEffect(() => {
     const numberOfItems = state.cart.reduce(
       (prev, current) => current.quantity + prev,
@@ -88,31 +83,42 @@ export const CartProvider: FC<PropsWithChildren> = ({ children }) => {
     );
     const taxRate = Number(process.env.NEXT_PUBLIC_TAX_RATE || 0);
 
-    const orderSumary = {
+    const orderSummary = {
       numberOfItems,
       subTotal,
       tax: subTotal * taxRate,
       total: subTotal * (taxRate + 1),
     };
-    dispatch({ type: '[Cart] - Update order summary', payload: orderSumary });
+
+    dispatch({ type: '[Cart] - Update order summary', payload: orderSummary });
   }, [state.cart]);
 
   const addProductToCart = (product: ICartProduct) => {
+    
+    const productInCart = state.cart.some((p) => p._id === product._id);
+    if (!productInCart)
+      return dispatch({
+        type: '[Cart] - Update products in cart',
+        payload: [...state.cart, product],
+      });
+
     const productInCartButDifferentSize = state.cart.some(
-      (item) => item._id === product._id && item.size === product.size
+      (p) => p._id === product._id && p.size === product.size
     );
     if (!productInCartButDifferentSize)
       return dispatch({
         type: '[Cart] - Update products in cart',
         payload: [...state.cart, product],
       });
-    /* Acumular */
-    const updatedProducts = state.cart.map((item) => {
-      if (item._id !== product._id) return item;
-      if (item.size !== product.size) return item;
-      /* actualizar la cantidad */
-      item.quantity += product.quantity;
-      return item;
+
+    // Acumular
+    const updatedProducts = state.cart.map((p) => {
+      if (p._id !== product._id) return p;
+      if (p.size !== product.size) return p;
+
+      // Actualizar la cantidad
+      p.quantity += product.quantity;
+      return p;
     });
 
     dispatch({
@@ -122,17 +128,11 @@ export const CartProvider: FC<PropsWithChildren> = ({ children }) => {
   };
 
   const updateCartQuantity = (product: ICartProduct) => {
-    dispatch({
-      type: '[Cart] - Update cart quantity',
-      payload: product,
-    });
+    dispatch({ type: '[Cart] - Change cart quantity', payload: product });
   };
 
   const removeCartProduct = (product: ICartProduct) => {
-    dispatch({
-      type: '[Cart] - Remove product in cart',
-      payload: product,
-    });
+    dispatch({ type: '[Cart] - Remove product in cart', payload: product });
   };
 
   const updateAddress = (address: IShippingAddress) => {
@@ -144,6 +144,7 @@ export const CartProvider: FC<PropsWithChildren> = ({ children }) => {
     Cookie.set('city', address.city);
     Cookie.set('country', address.country);
     Cookie.set('phone', address.phone);
+
     dispatch({ type: '[Cart] - Update Address', payload: address });
   };
 
@@ -170,6 +171,7 @@ export const CartProvider: FC<PropsWithChildren> = ({ children }) => {
 
     try {
       const { data } = await tesloApi.post<IOrder>('/orders', body);
+
       dispatch({ type: '[Cart] - Order complete' });
 
       return {
@@ -194,12 +196,14 @@ export const CartProvider: FC<PropsWithChildren> = ({ children }) => {
     <CartContext.Provider
       value={{
         ...state,
-        //methodse
+
+        // Methods
         addProductToCart,
-        updateCartQuantity,
         removeCartProduct,
+        updateCartQuantity,
         updateAddress,
-        //orders
+
+        // Orders
         createOrder,
       }}
     >
