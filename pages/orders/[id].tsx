@@ -1,5 +1,5 @@
 import { GetServerSideProps, NextPage } from 'next';
-import NextLink from 'next/link';
+import { PayPalButtons } from '@paypal/react-paypal-js';
 import {
   Box,
   Card,
@@ -7,7 +7,6 @@ import {
   Chip,
   Divider,
   Grid,
-  Link,
   Typography,
 } from '@mui/material';
 
@@ -109,7 +108,27 @@ const OrderPage: NextPage<Props> = ({ order }) => {
                     icon={<CreditScoreOutlined />}
                   />
                 ) : (
-                  <h1>Pagar</h1>
+                  <PayPalButtons
+                    createOrder={(data, actions) => {
+                      return actions.order.create({
+                        purchase_units: [
+                          {
+                            amount: {
+                              value: `${order.total}`,
+                            },
+                          },
+                        ],
+                      });
+                    }}
+                    onApprove={(data, actions) => {
+                      return actions.order!.capture().then((details) => {
+                        console.log({ details });
+                        
+                        const name = details.payer.name!.given_name;
+                        /* alert(`Transaction completed by ${name}`); */
+                      });
+                    }}
+                  />
                 )}
               </Box>
             </CardContent>
