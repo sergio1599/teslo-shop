@@ -16,6 +16,9 @@ export interface IOrder {
     paidAt?: string;
 
     transctionId?: string;
+
+    createdAt?: string;
+    updatedAt?: string;
 }
 
 
