@@ -1,6 +1,6 @@
-import { FC } from 'react';
+import { FC, useEffect, useState } from 'react';
 import { GetServerSideProps } from 'next';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { AdminLayout } from '../../../components/layouts';
 import {
   DriveFileRenameOutline,
@@ -22,14 +22,12 @@ import {
   FormGroup,
   FormLabel,
   Grid,
-  ListItem,
-  Paper,
   Radio,
   RadioGroup,
   TextField,
 } from '@mui/material';
 import { databaseProducts } from '../../../database';
-import { Iproduct, ISize, IType } from '../../../interfaces';
+import { Iproduct } from '../../../interfaces';
 
 const validTypes = ['shirts', 'pants', 'hoodies', 'hats'];
 const validGender = ['men', 'women', 'kid', 'unisex'];
@@ -54,15 +52,65 @@ interface Props {
 }
 
 const ProductAdminPage: FC<Props> = ({ product }) => {
+  const [newTagValue, setNewTagValue] = useState('');
+
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors },
+    getValues,
+    setValue,
+    watch,
   } = useForm<FormData>({
     defaultValues: product,
   });
 
-  const onDeleteTag = (tag: string) => {};
+  useEffect(() => {
+    const subscription = watch((value, { name, type }) => {
+      if (name === 'title') {
+        const newSlug =
+          value.title
+            ?.trim()
+            .replaceAll(' ', '_')
+            .replaceAll("'", '')
+            .toLocaleLowerCase() || '';
+
+        setValue('slug', newSlug);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [watch, setValue]);
+
+  const onChangeSize = (size: string) => {
+    const currentSizes = getValues('sizes');
+    if (currentSizes.includes(size)) {
+      return setValue(
+        'sizes',
+        currentSizes.filter((s) => s !== size),
+        { shouldValidate: true }
+      );
+    }
+    setValue('sizes', [...currentSizes, size], { shouldValidate: true });
+  };
+
+  const onNewTag = () => {
+    const newTag = newTagValue.trim().toLowerCase();
+    setNewTagValue('');
+    const currentTags = getValues('tags');
+
+    if (currentTags.includes(newTag)) {
+      return;
+    }
+
+    currentTags.push(newTag);
+  };
+
+  const onDeleteTag = (tag: string) => {
+    const updatedTags = getValues('tags').filter((t) => t !== tag);
+    setValue('tags', updatedTags, { shouldValidate: true });
+  };
 
   const onSubmit = (formData: FormData) => {
     console.log({ formData });
@@ -102,17 +150,25 @@ const ProductAdminPage: FC<Props> = ({ product }) => {
               helperText={errors.title?.message}
             />
 
-            <TextField
-              label='Descripción'
-              variant='filled'
-              fullWidth
-              multiline
-              sx={{ mb: 1 }}
-              {...register('description', {
+            <Controller
+              name='description'
+              rules={{
                 required: 'Este campo es requerido',
-              })}
-              error={!!errors.description}
-              helperText={errors.description?.message}
+              }}
+              control={control}
+              defaultValue=''
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  label='Descripción'
+                  variant='filled'
+                  fullWidth
+                  multiline
+                  sx={{ mb: 1 }}
+                  error={!!errors.description}
+                  helperText={errors.description?.message}
+                />
+              )}
             />
 
             <TextField
@@ -149,8 +205,10 @@ const ProductAdminPage: FC<Props> = ({ product }) => {
               <FormLabel>Tipo</FormLabel>
               <RadioGroup
                 row
-                // value={ status }
-                // onChange={ onStatusChanged }
+                value={getValues('type')}
+                onChange={({ target }) =>
+                  setValue('type', target.value, { shouldValidate: true })
+                }
               >
                 {validTypes.map((option) => (
                   <FormControlLabel
@@ -167,8 +225,10 @@ const ProductAdminPage: FC<Props> = ({ product }) => {
               <FormLabel>Género</FormLabel>
               <RadioGroup
                 row
-                // value={ status }
-                // onChange={ onStatusChanged }
+                value={getValues('gender')}
+                onChange={({ target }) =>
+                  setValue('gender', target.value, { shouldValidate: true })
+                }
               >
                 {validGender.map((option) => (
                   <FormControlLabel
@@ -186,8 +246,11 @@ const ProductAdminPage: FC<Props> = ({ product }) => {
               {validSizes.map((size) => (
                 <FormControlLabel
                   key={size}
-                  control={<Checkbox />}
+                  control={
+                    <Checkbox checked={getValues('sizes').includes(size)} />
+                  }
                   label={size}
+                  onChange={() => onChangeSize(size)}
                 />
               ))}
             </FormGroup>
@@ -217,6 +280,11 @@ const ProductAdminPage: FC<Props> = ({ product }) => {
               fullWidth
               sx={{ mb: 1 }}
               helperText='Presiona [spacebar] para agregar'
+              value={newTagValue}
+              onChange={({ target }) => setNewTagValue(target.value)}
+              onKeyDown={({ code }) =>
+                code === 'Space' ? onNewTag() : undefined
+              }
             />
 
             <Box
@@ -229,7 +297,7 @@ const ProductAdminPage: FC<Props> = ({ product }) => {
               }}
               component='ul'
             >
-              {product.tags.map((tag) => {
+              {getValues('tags').map((tag) => {
                 return (
                   <Chip
                     key={tag}
