@@ -9,12 +9,12 @@ export const getProductBySlug = async (slug: string): Promise<Iproduct | null> =
 
     await database.connect();
     const product = await Product.findOne({ slug }).lean();
-    console.log(product)
     await database.disconnect();
 
     if (!product) {
         return null;
     }
+    /* Procesar las imágenes cuando estén en cloudinary */
 
     return JSON.parse(JSON.stringify(product));
 }
