@@ -28,6 +28,9 @@ import {
 } from '@mui/material';
 import { databaseProducts } from '../../../database';
 import { Iproduct } from '../../../interfaces';
+import { tesloApi } from '../../../api';
+import { Product } from '../../../models';
+import { useRouter } from 'next/router';
 
 const validTypes = ['shirts', 'pants', 'hoodies', 'hats'];
 const validGender = ['men', 'women', 'kid', 'unisex'];
@@ -52,7 +55,9 @@ interface Props {
 }
 
 const ProductAdminPage: FC<Props> = ({ product }) => {
+  const router = useRouter();
   const [newTagValue, setNewTagValue] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
 
   const {
     register,
@@ -112,8 +117,26 @@ const ProductAdminPage: FC<Props> = ({ product }) => {
     setValue('tags', updatedTags, { shouldValidate: true });
   };
 
-  const onSubmit = (formData: FormData) => {
-    console.log({ formData });
+  const onSubmit = async (form: FormData) => {
+    if (form.images.length < 2) return alert('Mínimo 2 imágenes');
+    setIsSaving(true);
+
+    try {
+      const { data } = await tesloApi({
+        url: '/admin/products',
+        method: form._id ? 'PUT' : 'POST', //si tenemos un _id actualizar, si no crear
+        data: form,
+      });
+      console.log({ data });
+      if (!form._id) {
+        router.replace(`/admin/products/${form.slug}`);
+      } else {
+        setIsSaving(false);
+      }
+    } catch (error) {
+      console.log(error);
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -129,6 +152,7 @@ const ProductAdminPage: FC<Props> = ({ product }) => {
             startIcon={<SaveOutlined />}
             sx={{ width: '150px' }}
             type='submit'
+            disabled={isSaving}
           >
             Guardar
           </Button>
@@ -363,7 +387,19 @@ const ProductAdminPage: FC<Props> = ({ product }) => {
 export const getServerSideProps: GetServerSideProps = async ({ query }) => {
   const { slug = '' } = query;
 
-  const product = await databaseProducts.getProductBySlug(slug.toString());
+  let product: Iproduct | null;
+
+  if (slug === 'new') {
+    /* crear producto */
+    const tempProduct = JSON.parse(JSON.stringify(new Product()));
+    delete tempProduct._id;
+
+    tempProduct.images = ['img1.jpg', 'img2.jpg'];
+
+    product = tempProduct;
+  } else {
+    product = await databaseProducts.getProductBySlug(slug.toString());
+  }
 
   if (!product) {
     return {
