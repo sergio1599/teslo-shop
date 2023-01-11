@@ -1,5 +1,7 @@
 import { isValidObjectId } from 'mongoose';
 import type { NextApiRequest, NextApiResponse } from 'next'
+import { v2 as cloudinary } from 'cloudinary'
+cloudinary.config(process.env.CLOUDINARY_URL || '');
 import { database } from '../../../database';
 import { Iproduct } from '../../../interfaces';
 import { Product } from '../../../models';
@@ -19,7 +21,6 @@ export default function handler(req: NextApiRequest, res: NextApiResponse<Data>)
             return updateProducts(req, res);
         case 'POST':
             return createProduct(req, res);
-            break;
 
         default:
             return res.status(400).json({ message: 'Bad Request' })
@@ -39,8 +40,14 @@ const getProducts = async (req: NextApiRequest, res: NextApiResponse<Data>) => {
     await database.disconnect();
 
     /* Tengo que actualizar las imágenes */
+    const updatedProducts = products.map(product => {
+        product.images = product.images.map(image => {
+            return image.includes('http') ? image : `${process.env.HOST_NAME}/products/${image}`
+        });
+        return product;
+    })
 
-    res.status(200).json(products);
+    res.status(200).json(updatedProducts);
 }
 const updateProducts = async (req: NextApiRequest, res: NextApiResponse<Data>) => {
 
@@ -65,6 +72,14 @@ const updateProducts = async (req: NextApiRequest, res: NextApiResponse<Data>) =
         }
 
         /* eliminar imágenes en Cloudinary */
+        //https://res.cloudinary.com/dxasiwiyb/image/upload/v1673451886/ry9axumxglr4dqyvg4j5.webp
+        product.images.forEach(async (image) => {
+            if (!images.includes(image)) {
+                const [fileId, extension] = image.substring(image.lastIndexOf('/') + 1).split('.');
+                console.log({ image, fileId, extension });
+                await cloudinary.uploader.destroy(fileId);
+            }
+        })
 
         await product.update(req.body);
         await database.disconnect();

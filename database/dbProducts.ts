@@ -15,6 +15,9 @@ export const getProductBySlug = async (slug: string): Promise<Iproduct | null> =
         return null;
     }
     /* Procesar las imágenes cuando estén en cloudinary */
+    product.images = product.images.map(image => {
+        return image.includes('http') ? image : `${process.env.HOST_NAME}/products/${image}`
+    })
 
     return JSON.parse(JSON.stringify(product));
 }
@@ -42,7 +45,14 @@ export const getProductsByTerm = async (term: string): Promise<Iproduct[]> => {
 
     await database.disconnect();
 
-    return products;
+    const updatedProducts = products.map(product => {
+        product.images = product.images.map(image => {
+            return image.includes('http') ? image : `${process.env.HOST_NAME}/products/${image}`
+        });
+        return product;
+    })
+
+    return updatedProducts;
 }
 
 
@@ -50,5 +60,11 @@ export const getAllProducts = async (): Promise<Iproduct[]> => {
     await database.connect();
     const products = await Product.find().lean();
     await database.disconnect();
-    return JSON.parse(JSON.stringify(products));
+    const updatedProducts = products.map(product => {
+        product.images = product.images.map(image => {
+            return image.includes('http') ? image : `${process.env.HOST_NAME}/products/${image}`
+        });
+        return product;
+    })
+    return JSON.parse(JSON.stringify(updatedProducts));
 }
