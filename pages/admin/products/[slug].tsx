@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from 'react';
+import { ChangeEvent, FC, useEffect, useRef, useState } from 'react';
 import { GetServerSideProps } from 'next';
 import { Controller, useForm } from 'react-hook-form';
 import { AdminLayout } from '../../../components/layouts';
@@ -28,9 +28,9 @@ import {
 } from '@mui/material';
 import { databaseProducts } from '../../../database';
 import { Iproduct } from '../../../interfaces';
-import { tesloApi } from '../../../api';
 import { Product } from '../../../models';
 import { useRouter } from 'next/router';
+import { tesloApi } from '../../../api';
 
 const validTypes = ['shirts', 'pants', 'hoodies', 'hats'];
 const validGender = ['men', 'women', 'kid', 'unisex'];
@@ -56,6 +56,7 @@ interface Props {
 
 const ProductAdminPage: FC<Props> = ({ product }) => {
   const router = useRouter();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [newTagValue, setNewTagValue] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
@@ -115,6 +116,26 @@ const ProductAdminPage: FC<Props> = ({ product }) => {
   const onDeleteTag = (tag: string) => {
     const updatedTags = getValues('tags').filter((t) => t !== tag);
     setValue('tags', updatedTags, { shouldValidate: true });
+  };
+
+  const onFilesSelected = async ({ target }: ChangeEvent<HTMLInputElement>) => {
+    if (!target.files || target.files.length === 0) {
+      return;
+    }
+
+    try {
+      for (const file of target.files) {
+        const formData = new FormData();
+        formData.append('file', file);
+        const { data } = await tesloApi.post<{ message: string }>(
+          '/admin/upload/',
+          formData
+        );
+        console.log(data);
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const onSubmit = async (form: FormData) => {
@@ -344,9 +365,18 @@ const ProductAdminPage: FC<Props> = ({ product }) => {
                 fullWidth
                 startIcon={<UploadOutlined />}
                 sx={{ mb: 3 }}
+                onClick={() => fileInputRef.current?.click()}
               >
                 Cargar imagen
               </Button>
+              <input
+                ref={fileInputRef}
+                type='file'
+                multiple
+                accept='image/png, image/gif, image/jpeg'
+                style={{ display: 'none' }}
+                onChange={onFilesSelected}
+              />
 
               <Chip
                 label='Es necesario al 2 imagenes'
